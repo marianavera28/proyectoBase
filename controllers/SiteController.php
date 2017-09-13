@@ -171,7 +171,14 @@ class SiteController extends Controller
         }
         return $this->render("create", ['model' => $model, 'msg' => $msg]);
     }
-    
+
+    public function actionView()
+    {
+        $table = new Alumnos;
+        $model = $table->find()->all();
+        return $this->render("view", ["model" => $model]);
+    }
+
     /**
      * Displays homepage.
      *
