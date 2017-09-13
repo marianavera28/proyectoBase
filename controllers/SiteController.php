@@ -9,6 +9,7 @@ use yii\web\Response;
 use yii\filters\VerbFilter;
 use app\models\LoginForm;
 use app\models\ContactForm;
+use app\models\ValidarFormulario;
 
 class SiteController extends Controller
 {
@@ -82,6 +83,26 @@ class SiteController extends Controller
             $mensaje = "Bien, has enviando tu nombre correctamente: " . $_REQUEST["nombre"];
         }
         $this->redirect(["site/formulario", "mensaje" => $mensaje]);
+    }
+
+    public function actionValidarformulario()
+    {
+
+        $model = new ValidarFormulario;
+
+        if ($model->load(Yii::$app->request->post()))
+        {
+            if($model->validate())
+            {
+                //Por ejemplo, consultar en una base de datos
+            }
+            else
+            {
+                $model->getErrors();
+            }
+        }
+
+        return $this->render("validarformulario", ["model" => $model]);
     }
 
     /**
