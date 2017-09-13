@@ -12,7 +12,8 @@ use app\models\ContactForm;
 use app\models\ValidarFormulario;
 use app\models\ValidarFormularioAjax;
 use yii\widgets\ActiveForm;
-
+use app\models\FormAlumnos;
+use app\models\Alumnos;
 
 class SiteController extends Controller
 {
@@ -136,6 +137,41 @@ class SiteController extends Controller
         
         return $this->render("validarformularioajax", ['model' => $model, 'msg' => $msg]);
     }
+
+    public function actionCreate()
+    {
+        $model = new FormAlumnos;
+        $msg = null;
+        if($model->load(Yii::$app->request->post()))
+        {
+            if($model->validate())
+            {
+                $table = new Alumnos;
+                $table->nombre = $model->nombre;
+                $table->apellidos = $model->apellidos;
+                $table->clase = $model->clase;
+                $table->nota_final = $model->nota_final;
+                if ($table->insert())
+                {
+                    $msg = "Enhorabuena registro guardado correctamente";
+                    $model->nombre = null;
+                    $model->apellidos = null;
+                    $model->clase = null;
+                    $model->nota_final = null;
+                }
+                else
+                {
+                    $msg = "Ha ocurrido un error al insertar el registro";
+                }
+            }
+            else
+            {
+                $model->getErrors();
+            }
+        }
+        return $this->render("create", ['model' => $model, 'msg' => $msg]);
+    }
+    
     /**
      * Displays homepage.
      *
