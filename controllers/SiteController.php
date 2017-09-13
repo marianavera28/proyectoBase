@@ -14,6 +14,9 @@ use app\models\ValidarFormularioAjax;
 use yii\widgets\ActiveForm;
 use app\models\FormAlumnos;
 use app\models\Alumnos;
+use app\models\FormSearch;
+use yii\helpers\Html;
+
 
 class SiteController extends Controller
 {
@@ -176,7 +179,24 @@ class SiteController extends Controller
     {
         $table = new Alumnos;
         $model = $table->find()->all();
-        return $this->render("view", ["model" => $model]);
+        
+        $form = new FormSearch;
+        $search = null;
+        if($form->load(Yii::$app->request->get()))
+        {
+            if ($form->validate())
+            {
+                $search = Html::encode($form->q);
+                $query = "SELECT * FROM alumnos WHERE id_alumno LIKE '%$search%' OR ";
+                $query .= "nombre LIKE '%$search%' OR apellidos LIKE '%$search%'";
+                $model = $table->findBySql($query)->all();
+            }
+            else
+            {
+                $form->getErrors();
+            }
+        }
+        return $this->render("view", ["model" => $model, "form" => $form, "search" => $search]);
     }
 
     /**
