@@ -38,6 +38,7 @@ class SiteController extends Controller
         ];
     }
 
+
     /**
      * @inheritdoc
      */
@@ -54,6 +55,18 @@ class SiteController extends Controller
         ];
     }
 
+    public function actionSaluda($get = "Tutorial Yii")
+    {
+        $mensaje = "Hola Mundo";  
+        $numeros = [0, 1, 2, 3, 4, 5];
+        return $this->render("saluda", 
+                [
+                    "saluda" => $mensaje,
+                    "numeros" => $numeros,
+                    "get" => $get,
+                ]);
+    }
+    
     /**
      * Displays homepage.
      *
