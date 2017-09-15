@@ -26,6 +26,7 @@ use app\models\FormResetPass;
 use app\models\User;
 use app\models\FormUpload;
 use yii\web\UploadedFile;
+use app\models\ArchivosCargados;
 
 class SiteController extends Controller
 {
@@ -662,11 +663,88 @@ class SiteController extends Controller
             if ($model->file && $model->validate()) {
                 foreach ($model->file as $file) {
                     $file->saveAs('archivos/' . $file->baseName . '.' . $file->extension);
-                    $msg = "<p><strong class='label label-info'>Enhorabuena, subida realizada con éxito</strong></p>";
+                    $archivos_cargados = new ArchivosCargados;
+                    $archivos_cargados->nombre = $file->baseName;
+                    $archivos_cargados->extension = $file->extension;
+
+                    if($archivos_cargados->insert()){                   
+                        $msg = "<p><strong class='label label-info'>Enhorabuena, subida realizada con éxito</strong></p>";
+                    }else{
+                        $msg = "<p><strong class='label label-danger'>¡Ha ocurrido un error al cargar el archivo!</strong></p>";
+                    }
                 }
             }
         }
         return $this->render("upload", ["model" => $model, "msg" => $msg]);
+    }
+
+    private function downloadFile($dir, $file, $extensions=[])
+    {
+        //Si el directorio existe
+        if (is_dir($dir))
+        {
+            //Ruta absoluta del archivo
+            echo $path = $dir.$file;
+
+            //Si el archivo existe
+            if (is_file($path))
+            {
+                //Obtener información del archivo
+                $file_info = pathinfo($path);
+
+                //Obtener la extensión del archivo
+                $extension = $file_info["extension"];
+
+                if (is_array($extensions))
+                {
+                    //Si el argumento $extensions es un array
+                    //Comprobar las extensiones permitidas
+                    foreach($extensions as $e)
+                    {
+                        //Si la extension es correcta
+                        if ($e === $extension)
+                        {
+                            //Procedemos a descargar el archivo
+                            // Definir headers
+                            $size = filesize($path);
+                            header("Content-Type: application/force-download");
+                            header("Content-Disposition: attachment; filename=$file");
+                            header("Content-Transfer-Encoding: binary");
+                            header("Content-Length: " . $size);
+                            // Descargar archivo
+                            readfile($path);
+                            //Correcto
+                            return true;
+                        }
+                    }
+                }
+
+            }
+        }
+        //Ha ocurrido un error al descargar el archivo
+        return false;
+    }
+ 
+    public function actionDownload()
+    {
+        $model = ArchivosCargados::find()->all();
+        $msg = "";
+        if (Yii::$app->request->get("file"))
+        {
+            //Si el archivo no se ha podido descargar
+            //downloadFile($dir, $file, $extensions=[])
+            if (!$this->downloadFile("archivos/", Html::encode($_GET["file"]), ["pdf", "txt", "doc"]))
+            {
+                //Mensaje flash para mostrar el error
+                Yii::$app->session->setFlash("errordownload","<p><strong class='label label-danger'>¡Ha ocurrido un error al descargar el archivo!</strong></p>");
+                $msg = "<p><strong class='label label-danger'>¡Ha ocurrido un error al descargar el archivo!</strong></p>";
+            }else{
+                Yii::$app->session->setFlash("errordownload","<p><strong class='label label-info'>Enhorabuena, descarga realizada con éxito</strong></p>");
+                $msg = "<p><strong class='label label-info'>Enhorabuena, descarga realizada con éxito</strong></p>";
+            }
+
+        }
+        return $this->render("download", ['model' => $model, 'msg' => $msg]);
     }
 
     /**

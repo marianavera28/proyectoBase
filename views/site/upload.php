@@ -1,7 +1,11 @@
 <?php
+use yii\helpers\Url;
 use yii\helpers\Html;
 use yii\widgets\ActiveForm;
 ?>
+
+<a href="<?= Url::toRoute("site/download") ?>">Descargar Archivo del Listado</a>
+<br>
 
 <?= $msg ?>
 
